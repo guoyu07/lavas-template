@@ -29,6 +29,8 @@ module.exports = [
 
                 setImport(vueLoaders.stylus, variablesFilePath);
                 setImport(vueLoaders.styl, variablesFilePath);
+
+                webpackConfig.resolve.alias['extensions'] = globalConfig.extensionsDir;
             },
 
             server: function (webpackConfig) {
