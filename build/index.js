@@ -7,14 +7,16 @@ import Renderer from './Renderer';
 import WebpackConfig from './WebpackConfig';
 import ConfigReader from './ConfigReader';
 import ConfigValidator from './ConfigValidator';
-import serve from 'koa-static';
+// import serve from 'koa-static';
+import serveStatic from 'serve-static';
 import {emptyDir} from 'fs-extra';
 import privateFile from './middlewares/privateFile';
+import connect from 'connect';
 
 export default class LavasCore {
     constructor(cwd = process.cwd(), app) {
         this.cwd = cwd;
-        this.app = app;
+        this.app = connect();
     }
 
     async init(env = 'development') {
@@ -71,7 +73,7 @@ export default class LavasCore {
         }
 
         this.setupMiddlewares();
-        this.setupErrorHandler();
+        // this.setupErrorHandler();
     }
 
     setupErrorHandler() {
@@ -126,9 +128,9 @@ export default class LavasCore {
     }
 
     setupMiddlewares() {
-        if (this.app) {
+        if (this.app && this.isProd) {
             // add static middleware
-            this.app.use(serve(this.config.webpack.base.output.path));
+            this.app.use(serveStatic(this.config.webpack.base.output.path));
             // protected some static files such as routes.json, bundle.json
             // this.app.use(privateFile([...this.routeManager.privateFiles,
             //     ...this.renderer.privateFiles]));
@@ -161,4 +163,36 @@ export default class LavasCore {
             });
         }
     }
+
+    async expressMiddleware(req, res, next) {
+        let matchedRoute = this.routeManager.findMatchedRoute(req.path);
+        let config = this.config;
+        let html;
+        if (this.isProd
+            && matchedRoute && matchedRoute.prerender) {
+            console.log(`[Lavas] prerender ${ctx.path}`);
+
+            html = await this.routeManager.prerender(matchedRoute);
+            res.send(html);
+        }
+        else {
+            console.log(`[Lavas] ssr ${ctx.path}`);
+
+            let renderer = await this.renderer.getRenderer();
+            let ctx = {
+                title: 'Lavas', // default title
+                url: req.url
+            };
+            ctx.config = config;
+            // render to string
+            renderer.renderToString(ctx, (err, html) => {
+                if (err) {
+                    return next(err);
+                }
+
+                res.send(html);
+            });
+        }
+    }
+
 }
