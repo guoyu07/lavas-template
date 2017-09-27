@@ -3,12 +3,13 @@
  * @author *__ author __*{% if: *__ email __* %}(*__ email __*){% /if %}
  */
 
-import {ensureFile, writeFile} from 'fs-extra';
+import {ensureFile, writeFile, readFile} from 'fs-extra';
 import {join} from 'path';
 import glob from 'glob';
 import _ from 'lodash';
 import {CONFIG_FILE} from './constants';
 import {distLavasPath} from './utils/path';
+import * as JsonUtil from './utils/json';
 
 export default class ConfigReader {
     constructor(cwd, env) {
@@ -54,7 +55,9 @@ export default class ConfigReader {
             name = paths.pop();
 
             // load config
-            cur[name] = await import(join(configDir, filepath));
+            let configPath = join(configDir, filepath);
+            delete require.cache[configPath];
+            cur[name] = await import(configPath);
         }));
 
         let temp = config.env || {};
@@ -73,21 +76,6 @@ export default class ConfigReader {
      * @return {Object} config
      */
     async readConfigFile() {
-        return await import(distLavasPath(this.cwd, CONFIG_FILE));
-    }
-
-    /**
-     * write config.json which will be used in prod mode
-     *
-     * @param {Object} config
-     */
-    async writeConfigFile(config) {
-        let configFilePath = distLavasPath(config.webpack.base.output.path, CONFIG_FILE);
-        await ensureFile(configFilePath);
-        await writeFile(
-            configFilePath,
-            JSON.stringify(config, null, 2),
-            'utf8'
-        );
+        return JsonUtil.parse(await readFile(distLavasPath(this.cwd, CONFIG_FILE), 'utf8'));
     }
 }

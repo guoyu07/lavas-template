@@ -1,5 +1,5 @@
 /**
- * @file server.js
+ * @file server.prod.js
  * @author lavas
  */
 
@@ -11,15 +11,13 @@ let port = process.env.PORT || 3000;
 
 let core = new LavasCore(__dirname);
 
-core.init('development', true).then(() => {
-    return core.build();
+core.init('production').then(() => {
+    return core.runAfterBuild();
 }).then(() => {
     app.use(core.koaMiddleware());
-
     app.listen(port, () => {
         console.log('server started at localhost:' + port);
     });
 }).catch((err) => {
-    core.close();
     console.log(err);
 });
