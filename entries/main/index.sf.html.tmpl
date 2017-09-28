@@ -1,13 +1,13 @@
 <%= useCustomOnly() %>
 
 <template id="sf_async_head_js" type="template/head">
-    {{{ renderScripts().replace(/\<script\s+src=\"\/static\/js\/(detail|vendor|vue)\.\w+\.js"\sdefer\>\<\/s+cript\>/g, '').replace(/\sdefer/g, '').replace(/\"\//g, '"http://localhost:3001/') }}}
+    {{{ renderScripts().replace(/\<script\s+src=\"\/static\/js\/(main|vendor|vue)\.\w+\.js"\sdefer\>\<\/s+cript\>/g, '').replace(/\sdefer/g, '').replace(/\"\//g, '"http://localhost:3001/') }}}
 </template>
 <template id="sf_async_head_js" type="template/head">
-    {{{ renderScripts().replace(/\<script\s+src=\"\/static\/js\/(manifest|detail|vue)\.\w+\.js"\sdefer\>\<\/s+cript\>/g, '').replace(/\sdefer/g, '').replace(/\"\//g, '"http://localhost:3001/') }}}
+    {{{ renderScripts().replace(/\<script\s+src=\"\/static\/js\/(manifest|main|vue)\.\w+\.js"\sdefer\>\<\/s+cript\>/g, '').replace(/\sdefer/g, '').replace(/\"\//g, '"http://localhost:3001/') }}}
 </template>
 <template id="sf_async_head_js" type="template/head">
-    {{{ renderScripts().replace(/\<script\s+src=\"\/static\/js\/(manifest|vendor|detail)\.\w+\.js"\sdefer\>\<\/s+cript\>/g, '').replace(/\sdefer/g, '').replace(/\"\//g, '"http://localhost:3001/') }}}
+    {{{ renderScripts().replace(/\<script\s+src=\"\/static\/js\/(manifest|vendor|main)\.\w+\.js"\sdefer\>\<\/s+cript\>/g, '').replace(/\sdefer/g, '').replace(/\"\//g, '"http://localhost:3001/') }}}
 </template>
 <template id="sf_async_css" type="template/head">
     <style></style>

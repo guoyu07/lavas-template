@@ -22,6 +22,26 @@ module.exports = {
         // {from: '/detail/:id', to: '/rewrite/detail/:id'}
     ],
 
+    /**
+     * global route path alias
+     *
+     * usage: [
+     *     {
+     *         name: 'xx',
+     *         prefix: '/your/global/prefix'
+     *     },
+     *     '/anothor/global/frefix'
+     * ]
+     *
+     * @type Array<Object | string>
+     */
+    alias: [
+        {
+            name: 'sf',
+            prefix: '/sf_lavas'
+        }
+    ],
+
     routes: [
         {
             pattern: '/detail/:id',

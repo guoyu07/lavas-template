@@ -3,6 +3,8 @@
  * @author *__ author __*{% if: *__ email __* %}(*__ email __*){% /if %}
  */
 
+/* global _SF_ */
+
 import Vue from 'vue';
 import FastClick from 'fastclick';
 import middleware from '@/core/middleware';
@@ -21,7 +23,10 @@ if (window.__INITIAL_STATE__) {
     store.replaceState(window.__INITIAL_STATE__);
 }
 
-document.body.appendChild(loading.$el);
+// superframe 情况下，不需要全局的 loading
+if (!window._SF_) {
+    document.body.appendChild(loading.$el);
+}
 FastClick.attach(document.body);
 
 Vue.mixin({
@@ -31,7 +36,6 @@ Vue.mixin({
 
         // asyncData方法中包含异步数据请求
         let asyncData = this.$options.asyncData;
-
         if (asyncData) {
             loading.start();
             asyncData.call(this, {
@@ -135,8 +139,9 @@ router.beforeResolve((to, from, next) => {
     .catch(next);
 });
 
-router.onReady(() => app.$mount('#app'));
-
+router.onReady(() => {
+    app.$mount('#app', true);
+});
 
 /**
  * execute middlewares

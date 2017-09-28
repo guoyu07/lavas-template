@@ -19,7 +19,7 @@ module.exports = [
          *
          * @type {boolean}
          */
-        ssr: false,
+        ssr: true,
 
         /**
          * vue-router base url
@@ -48,13 +48,14 @@ module.exports = [
          *
          * @type {string}
          */
-        // templateFile: process.env.MODE === 'sf' ? 'index.sf.html.tmpl' : 'index.html.tmpl'
+        templateFile: process.env.MODE === 'sf' ? 'index.sf.html.tmpl' : 'index.html.tmpl'
     },
     {
         name: 'main',
-        ssr: false,
+        ssr: true,
         mode: 'history',
         base: '/',
-        routes: /^.*$/
+        routes: /^.*$/,
+        templateFile: process.env.MODE === 'sf' ? 'index.sf.html.tmpl' : 'index.html.tmpl'
     }
 ];

@@ -2,8 +2,15 @@
     <div>
         <h2 class="gray--text">LAVAS</h2>
         <h4 class="gray--text">[ˈlɑ:vəz]</h4>
-        <router-link to="/detail/1">detail</router-link>
-        <a href="/detail/#/detail/1">real detail</a>
+        <!-- v-if 有 bug 啊， a 标签错了 -->
+        <div v-show="isSf">
+            <router-link to="/sf_lavas/detail/1">detail</router-link>
+            <a href="/sf_lavas/detail/#/detail/1">real detail</a>
+        </div>
+        <div v-show="!isSf">
+            <router-link to="/detail/1">detail</router-link>
+            <a href="/detail/#/detail/1">real detail</a>
+        </div>
     </div>
 </template>
 
@@ -22,6 +29,11 @@ export default {
             {name: 'description', content: '基于 Vue 的 PWA 解决方案，帮助开发者快速搭建 PWA 应用，解决接入 PWA 的各种问题'}
         ]
     },
+    computed: {
+        isSf() {
+            return this.$route.path.includes('sf_lavas');
+        }
+    },
     async asyncData({store, route}) {
         setState(store);
     },
@@ -36,4 +48,10 @@ h2
     margin-top 50%
     font-size 46px
     font-weight 500
+h4
+    padding 20px 0
+a
+    text-decoration underline
+    color blue
+
 </style>

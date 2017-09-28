@@ -87,8 +87,10 @@ export default class RouteManager {
 
             // find route in config
             let routeConfig = routesConfig.find(({pattern}) => {
-                return pattern instanceof RegExp ?
-                    pattern.test(route.fullPath) : pattern === route.fullPath;
+                return pattern instanceof RegExp
+                    ? pattern.test(route.fullPath)
+                    : pattern === route.fullPath
+                ;
             });
 
             // map entry to every route
@@ -143,6 +145,7 @@ export default class RouteManager {
      * @return {string} content
      */
     generateRoutesContent(routes) {
+        let me = this;
         return routes.reduce((prev, cur) => {
             let childrenContent = '';
             if (cur.children) {
@@ -150,13 +153,39 @@ export default class RouteManager {
                     ${this.generateRoutesContent(cur.children)}
                 ]`;
             }
-            return prev + `{
+
+            // add global router alias
+            let alias = me.config.router.alias;
+            let routeStr = prev + `{
                 path: '${cur.path}',
                 name: '${cur.name}',
                 component: _${cur.hash},
                 meta: ${JSON.stringify(cur.meta || {})},
                 ${childrenContent}
             },`;
+
+            if (alias && alias.length >= 1) {
+                alias.forEach((item, index) => {
+                    let aliasPrefix = '';
+                    let aliasName = 'alias' + index;
+                    if (typeof item === 'string') {
+                        aliasPrefix = item;
+                    }
+                    else if (typeof item === 'object') {
+                        aliasPrefix = item.prefix;
+                        aliasName = item.name || aliasName;
+                    }
+                    routeStr += `{
+                        path: '${aliasPrefix}${cur.path}',
+                        name: '${aliasName}_${cur.name}',
+                        component: _${cur.hash},
+                        meta: ${JSON.stringify(cur.meta || {})},
+                        ${childrenContent}
+                    },`;
+                });
+            }
+
+            return routeStr;
         }, '');
     }
 
@@ -173,7 +202,7 @@ export default class RouteManager {
             let entryFlatRoutes = new Set();
             this.flatRoutes.forEach(flatRoute => {
                 if (flatRoute.entryName === entryName) {
-                    entryFlatRoutes.add(flatRoute)
+                    entryFlatRoutes.add(flatRoute);
                 }
             });
 
