@@ -31,6 +31,8 @@ export default class RouteManager {
         this.routes = [];
 
         this.flatRoutes = new Set();
+
+        this.errorRoute;
     }
 
     /**
@@ -85,6 +87,21 @@ export default class RouteManager {
             route.path = this.rewriteRoutePath(rewriteRules, route.path);
             route.fullPath = parentPath ? `${parentPath}/${route.path}` : route.path;
 
+            // find error route
+            if (route.fullPath === this.config.errorHandler.errorPath) {
+                this.errorRoute = route;
+            }
+            // map entry to every route
+            else {
+                let entry = this.config.entry.find(
+                    entryConfig => matchUrl(entryConfig.routes, route.fullPath)
+                );
+
+                if (entry) {
+                    route.entryName = entry.name;
+                }
+            }
+
             // find route in config
             let routeConfig = routesConfig.find(({pattern}) => {
                 return pattern instanceof RegExp
@@ -92,13 +109,6 @@ export default class RouteManager {
                     : pattern === route.fullPath
                 ;
             });
-
-            // map entry to every route
-            let entry = this.config.entry.find(
-                entryConfig => matchUrl(entryConfig.routes, route.fullPath));
-            if (entry) {
-                route.entryName = entry.name;
-            }
 
             // mixin with config, rewrites path, add lazyLoading, meta
             if (routeConfig) {
@@ -128,7 +138,9 @@ export default class RouteManager {
              * turn route fullpath into regexp
              * eg. /detail/:id => /^\/detail\/[^\/]+\/?$/
              */
-            route.pathRegExp = new RegExp(`^${route.path.replace(/\/:[^\/]*/g, '/[^\/]+')}\/?`);
+            route.pathRegExp = route.path === '*'
+                ? /^.*$/
+                : new RegExp(`^${route.path.replace(/\/:[^\/]*/g, '/[^\/]+')}\/?`);
 
             // merge recursively
             if (route.children && route.children.length) {
@@ -144,13 +156,12 @@ export default class RouteManager {
      * @param {Array} routes route list
      * @return {string} content
      */
-    generateRoutesContent(routes) {
-        let me = this;
-        return routes.reduce((prev, cur) => {
+    generateRoutesContent(routes, recursive) {
+        let commonRoutes = routes.reduce((prev, cur) => {
             let childrenContent = '';
             if (cur.children) {
                 childrenContent = `children: [
-                    ${this.generateRoutesContent(cur.children)}
+                    ${this.generateRoutesContent(cur.children, true)}
                 ]`;
             }
 
@@ -187,6 +198,22 @@ export default class RouteManager {
 
             return routeStr;
         }, '');
+
+        // Call `this.$router.replace({name: xxx})` when path of 'xxx' contains '*' will throw error
+        // see https://github.com/vuejs/vue-router/issues/724
+
+        // Solution:
+        // 1. Get errorRoute from last position
+        // 2. Add alias to route.js
+        let errorRoute = routes[routes.length - 1];
+        if (!recursive && errorRoute) {
+            return commonRoutes + `{
+                path: '*',
+                alias: '${errorRoute.path}'
+            }`;
+        }
+
+        return commonRoutes;
     }
 
     /**
@@ -206,14 +233,18 @@ export default class RouteManager {
                 }
             });
 
+            // add error route
+            entryRoutes.push(this.errorRoute);
+            entryFlatRoutes.add(this.errorRoute);
+
             let routesFilePath = join(this.lavasDir, `${entryName}/router.js`);
             let routesContent = this.generateRoutesContent(entryRoutes);
 
             let routesFileContent = template(await readFile(routerTemplate, 'utf8'))({
-                routes: entryFlatRoutes,
                 router: {
                     mode,
-                    base
+                    base,
+                    routes: entryFlatRoutes
                 },
                 routesContent
             });

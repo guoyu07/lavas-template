@@ -2,15 +2,7 @@
     <div>
         <h2 class="gray--text">LAVAS</h2>
         <h4 class="gray--text">[ˈlɑ:vəz]</h4>
-        <!-- v-if 有 bug 啊， a 标签错了 -->
-        <div v-show="isSf">
-            <router-link to="/sf_lavas/detail/1">detail</router-link>
-            <a href="/sf_lavas/detail/#/detail/1">real detail</a>
-        </div>
-        <div v-show="!isSf">
-            <router-link to="/detail/1">detail</router-link>
-            <a href="/detail/#/detail/1">real detail</a>
-        </div>
+        <lavas-link to="/detail/1">detail</lavas-link>
     </div>
 </template>
 
